@@ -6,18 +6,29 @@ terraform {
 
 provider "spacelift" {}
 
+data "spacelift_current_stack" "this" {}
+
+data "spacelift_stack" "this" {
+  stack_id = data.spacelift_current_stack.this.id
+}
+
 resource "spacelift_stack" "validator" {
   name        = "Spacelift resource validator"
   description = "Continuous validation for Spacelift resources"
   
   administrative = true
   project_root   = "validator"
-  after_plan     = ["terraform show -json spacelift.plan | jq -c '.prior_state.values.root_module.resources[0].values' > check.custom.spacelift.json"]
+  space_id       = data.spacelift_stack.this.space_id
+
+  after_plan = [
+    "terraform show -json spacelift.plan | jq -c '.prior_state.values.root_module.resources[0].values' > check.custom.spacelift.json",
+  ]
 
   raw_git {
-     namespace = "marcinwyszynski"
-     url = "https://github.com/marcinwyszynski/spacelift-resource-checker.git"
+     namespace = data.spacelift_stack.this.raw_git[0].namespace
+     url = data.spacelift_stack.this.raw_git[0].url
   }
   
-  repository = "spacelift-resource-checker"
+  repository = data.spacelift_stack.this.repository
+  branch     = data.spacelift_stack.this.branch
 }
