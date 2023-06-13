@@ -40,7 +40,7 @@ resource "spacelift_policy" "validator" {
   type     = "PLAN"
 }
 
-resource "spacelift_policy_attachment" "no-weekend-deploys" {
+resource "spacelift_policy_attachment" "validator" {
   policy_id = spacelift_policy.validator.id
   stack_id  = spacelift_stack.validator.id
 }
