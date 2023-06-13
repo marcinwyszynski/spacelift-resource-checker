@@ -32,3 +32,15 @@ resource "spacelift_stack" "validator" {
   repository = data.spacelift_stack.this.repository
   branch     = data.spacelift_stack.this.branch
 }
+
+resource "spacelift_policy" "validator" {
+  name     = "Spacelift resource validator"
+  space_id = data.spacelift_stack.this.space_id
+  body     = file("${path.module}/plan_policy.rego")
+  type     = "PLAN"
+}
+
+resource "spacelift_policy_attachment" "no-weekend-deploys" {
+  policy_id = spacelift_policy.validator.id
+  stack_id  = spacelift_stack.validator.id
+}
